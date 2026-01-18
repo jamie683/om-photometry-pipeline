@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1136586707.svg)](https://doi.org/10.5281/zenodo.18285162)
+
 # OM Photometry Pipeline
 
 This repository contains a Python pipeline for time-series differential photometry
