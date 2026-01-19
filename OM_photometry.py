@@ -1087,9 +1087,9 @@ def main(cube_path: Path, reg_path: Path, outdir: Path, *,
 if __name__ == "__main__":
     
     # - EDIT ONCE -
-    CUBE = Path(r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\reduction\OM_green_cube.fits")
-    REG  = Path(r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\regions\om_regions.reg")
-    OUT  = Path(r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\photometry_tracked_min")
+    CUBE = Path(r"path/to/data/cube")
+    REG  = Path(r"path/to/reg/file")
+    OUT  = Path(r"path/to/output/folder")
 
     # Start with forgiving settings
     main(

@@ -15,16 +15,15 @@ from astropy.coordinates import SkyCoord, EarthLocation
 import astropy.units as u
 
 
-# -----------------------------------------------------------------------------
+
 # DEFAULT CONFIG (used unless CLI overrides)
-# -----------------------------------------------------------------------------
 DEFAULT_CONFIG = {
-    "science_dir": r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\data",
-    "bias_dir":    r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\bias",
-    "outdir":      r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\reduction",
+    "science_dir": r"path/to/data/folder",
+    "bias_dir":    r"path/to/bias/folder",
+    "outdir":      r"path/to/output/folder",
 
     # Optional
-    "camera_settings": r"C:\Users\Jamie McAteer\PythonSaves\Fits\TOI_4546_b\TOI_00001.CameraSettings.txt",
+    "camera_settings": r"...../TOI_00001.CameraSettings.txt",
 
     # Target / observatory (only needed for BJD_TDB)
     "target_ra":  None,          # "10:00:00.0"
@@ -36,9 +35,7 @@ DEFAULT_CONFIG = {
 
 
 
-# -----------------------------------------------------------------------------
 # 0) Mini logbook (auto-appended every run)
-# -----------------------------------------------------------------------------
 def log_update(log_path: Path, title: str, details: str = "", meta: dict | None = None) -> None:
     log_path.parent.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -62,9 +59,8 @@ def log_update(log_path: Path, title: str, details: str = "", meta: dict | None 
         f.write("\n".join(lines))
 
 
-# -----------------------------------------------------------------------------
+
 # 1) FITS read + header normalization
-# -----------------------------------------------------------------------------
 def read_asi2600mc_fits(fits_path: Path):
     with fits.open(fits_path, memmap=False) as hdul:
         h = hdul[0].header
@@ -96,9 +92,8 @@ def read_asi2600mc_fits(fits_path: Path):
     return img, h, meta
 
 
-# -----------------------------------------------------------------------------
+
 # 2) Bayer -> photometry image (Green average for RGGB)
-# -----------------------------------------------------------------------------
 def extract_green_from_rggb(raw: np.ndarray) -> np.ndarray:
     # RGGB tile:
     # R G
@@ -109,9 +104,8 @@ def extract_green_from_rggb(raw: np.ndarray) -> np.ndarray:
     return 0.5 * (g1.astype(np.float32) + g2.astype(np.float32))
 
 
-# -----------------------------------------------------------------------------
-# 3) Time conversion: mid-exposure UTC -> BJD_TDB (optional but recommended)
-# -----------------------------------------------------------------------------
+
+# 3) Time conversion: mid-exposure UTC -> BJD_TDB
 def compute_bjd_tdb(meta: dict, target: SkyCoord, location: EarthLocation) -> float:
     # Prefer SharpCap mid-exposure JD_UTC if present; else DATE-AVG
     jd_utc = meta.get("jd_utc", None)
@@ -126,9 +120,8 @@ def compute_bjd_tdb(meta: dict, target: SkyCoord, location: EarthLocation) -> fl
     return float((t.tdb + ltt).jd)
 
 
-# -----------------------------------------------------------------------------
+
 # 4) Master bias builder (median stack)
-# -----------------------------------------------------------------------------
 def build_master_bias(bias_dir: Path, outdir: Path, log_path: Path) -> np.ndarray:
     bias_files = sorted(list(bias_dir.rglob("*.fit*")))
     if not bias_files:
@@ -163,9 +156,8 @@ def build_master_bias(bias_dir: Path, outdir: Path, log_path: Path) -> np.ndarra
     return master
 
 
-# -----------------------------------------------------------------------------
+
 # 5) Main reduction: bias-only + green extraction + optional BJD_TDB
-# -----------------------------------------------------------------------------
 def reduce_om_dataset(
     science_dir: Path,
     bias_dir: Path,
@@ -193,7 +185,7 @@ def reduce_om_dataset(
         ),
     )
 
-    # Optional: copy camera settings into output and log it
+
     if camera_settings_txt and camera_settings_txt.exists():
         copied = outdir / camera_settings_txt.name
         copied.write_text(camera_settings_txt.read_text(encoding="utf-8", errors="ignore"), encoding="utf-8")
